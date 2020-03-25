@@ -21,6 +21,7 @@ use GRPC's reflect mode to request GRPC Server. grpcall support FileDescriptorSe
 ## Usage
 
 ```go
+// invoke.go的175行，如果注释掉，就不会严格校验传入的json参数是否跟pb的完全匹配
 grpcall.SetProtoSetFiles("helloworld.protoset")
 grpcall.InitDescSource()
 
