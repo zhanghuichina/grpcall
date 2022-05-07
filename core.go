@@ -18,7 +18,7 @@ import (
 	descpb "github.com/golang/protobuf/protoc-gen-go/descriptor"
 	"github.com/golang/protobuf/ptypes"
 	"github.com/golang/protobuf/ptypes/empty"
-	"github.com/golang/protobuf/ptypes/struct"
+	structpb "github.com/golang/protobuf/ptypes/struct"
 	"github.com/jhump/protoreflect/desc"
 	"github.com/jhump/protoreflect/desc/protoprint"
 	"github.com/jhump/protoreflect/dynamic"
@@ -555,7 +555,7 @@ func ServerTransportCredentials(cacertFile, serverCertFile, serverKeyFile string
 // BlockingDial is a helper method to dial the given address, using optional TLS credentials,
 // and blocking until the returned connection is ready. If the given credentials are nil, the
 // connection will be insecure (plain-text).
-func BlockingDial(ctx context.Context, address string, opts ...grpc.DialOption) (*grpc.ClientConn, error) {
+func BlockingDial(ctx context.Context, nettype string, address string, opts ...grpc.DialOption) (*grpc.ClientConn, error) {
 	// grpc.Dial doesn't provide any information on permanent connection errors (like
 	// TLS handshake failures). So in order to provide good error messages, we need a
 	// custom dialer that can provide that info. That means we manage the TLS handshake.
@@ -573,7 +573,7 @@ func BlockingDial(ctx context.Context, address string, opts ...grpc.DialOption) 
 		ctx, cancel := context.WithTimeout(ctx, timeout)
 		defer cancel()
 
-		conn, err := (&net.Dialer{Cancel: ctx.Done()}).Dial("unix", address)
+		conn, err := (&net.Dialer{Cancel: ctx.Done()}).Dial(nettype, address)
 		if err != nil {
 			writeResult(err)
 			return nil, err

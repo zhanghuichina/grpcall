@@ -261,7 +261,7 @@ func New(options ...Option) (*EngineHandler, error) {
 	return e, nil
 }
 
-func (e *EngineHandler) DoConnect(target string) (*grpc.ClientConn, error) {
+func (e *EngineHandler) DoConnect(nettype string, target string) (*grpc.ClientConn, error) {
 	e.clientsLock.RLock() // read lock
 	if conn, ok := e.clients[target]; ok {
 		e.clientsLock.RUnlock()
@@ -278,7 +278,7 @@ func (e *EngineHandler) DoConnect(target string) (*grpc.ClientConn, error) {
 		Timeout: e.keepAliveTime,
 	}))
 
-	cc, err := BlockingDial(ctx, target, opts...)
+	cc, err := BlockingDial(ctx, nettype, target, opts...)
 	if err != nil {
 		return cc, err
 	}
@@ -324,36 +324,36 @@ func (e *EngineHandler) Close() error {
 	return nil
 }
 
-func (e *EngineHandler) CallWithCtx(ctx context.Context, target, serviceName, methodName, data string) (*ResultModel, error) {
-	return e.invokeCall(ctx, nil, target, serviceName, methodName, data)
+func (e *EngineHandler) CallWithCtx(ctx context.Context, nettype, target, serviceName, methodName, data string) (*ResultModel, error) {
+	return e.invokeCall(ctx, nil, nettype, target, serviceName, methodName, data)
 }
 
-func (e *EngineHandler) Call(target, serviceName, methodName, data string) (*ResultModel, error) {
-	return e.invokeCall(e.ctx, nil, target, serviceName, methodName, data)
+func (e *EngineHandler) Call(target, nettype, serviceName, methodName, data string) (*ResultModel, error) {
+	return e.invokeCall(e.ctx, nil, nettype, target, serviceName, methodName, data)
 }
 
-func (e *EngineHandler) CallWithAddr(target, serviceName, methodName, data string) (*ResultModel, error) {
-	return e.invokeCall(e.ctx, nil, target, serviceName, methodName, data)
+func (e *EngineHandler) CallWithAddr(target, nettype, serviceName, methodName, data string) (*ResultModel, error) {
+	return e.invokeCall(e.ctx, nil, nettype, target, serviceName, methodName, data)
 }
 
-func (e *EngineHandler) CallWithAddrCtx(ctx context.Context, target, serviceName, methodName, data string) (*ResultModel, error) {
-	return e.invokeCall(ctx, nil, target, serviceName, methodName, data)
+func (e *EngineHandler) CallWithAddrCtx(ctx context.Context, nettype, target, serviceName, methodName, data string) (*ResultModel, error) {
+	return e.invokeCall(ctx, nil, nettype, target, serviceName, methodName, data)
 }
 
-func (e *EngineHandler) CallWithClient(client *grpc.ClientConn, serviceName, methodName, data string) (*ResultModel, error) {
-	return e.CallWithClientCtx(nil, client, serviceName, methodName, data)
+func (e *EngineHandler) CallWithClient(client *grpc.ClientConn, nettype, serviceName, methodName, data string) (*ResultModel, error) {
+	return e.CallWithClientCtx(nil, client, nettype, serviceName, methodName, data)
 }
 
-func (e *EngineHandler) CallWithClientCtx(ctx context.Context, client *grpc.ClientConn, serviceName, methodName, data string) (*ResultModel, error) {
+func (e *EngineHandler) CallWithClientCtx(ctx context.Context, client *grpc.ClientConn, nettype, serviceName, methodName, data string) (*ResultModel, error) {
 	if client == nil {
 		return nil, errors.New("invalid grpc client")
 	}
 
-	return e.invokeCall(ctx, client, "", serviceName, methodName, data)
+	return e.invokeCall(ctx, client, nettype, "", serviceName, methodName, data)
 }
 
 // invokeCall request target grpc server
-func (e *EngineHandler) invokeCall(ctx context.Context, gclient *grpc.ClientConn, target, serviceName, methodName, data string) (*ResultModel, error) {
+func (e *EngineHandler) invokeCall(ctx context.Context, gclient *grpc.ClientConn, nettype, target, serviceName, methodName, data string) (*ResultModel, error) {
 	if serviceName == "" || methodName == "" {
 		return nil, errors.New("serverName or methodName is null")
 	}
@@ -385,7 +385,7 @@ func (e *EngineHandler) invokeCall(ctx context.Context, gclient *grpc.ClientConn
 	if descSourceController.descMode == ProtoReflectMode {
 		md := MetadataFromHeaders(append(addlHeaders, reflHeaders...))
 		refCtx := metadata.NewOutgoingContext(e.ctx, md)
-		cc, connErr = e.DoConnect(target)
+		cc, connErr = e.DoConnect(nettype, target)
 		if connErr != nil {
 			return nil, connErr
 		}
@@ -395,7 +395,7 @@ func (e *EngineHandler) invokeCall(ctx context.Context, gclient *grpc.ClientConn
 	}
 
 	if gclient == nil {
-		cc, connErr = e.DoConnect(target)
+		cc, connErr = e.DoConnect(nettype, target)
 		if connErr != nil {
 			return nil, connErr
 		}
