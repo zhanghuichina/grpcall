@@ -207,7 +207,7 @@ func (in *InvokeHandler) invokeUnary(ctx context.Context, stub grpcdynamic.Stub,
 		Data:       respText,
 		RespHeader: respHeaders,
 	}
-	return result, nil
+	return result, err
 }
 
 // invokeAllStrem server and client are stream mode

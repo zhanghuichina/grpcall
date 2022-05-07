@@ -6,10 +6,8 @@ import (
 	"fmt"
 	"io"
 	"os"
-	"os/signal"
 	"strings"
 	"sync"
-	"syscall"
 	"time"
 
 	"github.com/golang/protobuf/proto"
@@ -154,6 +152,9 @@ func (d *DescSourceEntry) InitDescSource() error {
 		if err != nil {
 			return errors.New("Failed to process proto source files")
 		}
+	case ProtoReflectMode:
+
+		//descSourceController.descSource, err = DescriptorSourceFromServer()
 
 	default:
 		return errors.New("only eq ProtoSetMode and ProtoFilesMode")
@@ -165,7 +166,6 @@ func (d *DescSourceEntry) InitDescSource() error {
 func (d *DescSourceEntry) AysncNotifyDesc() {
 	go func() {
 		q := make(chan os.Signal, 1)
-		signal.Notify(q, syscall.SIGUSR1)
 
 		for {
 			select {

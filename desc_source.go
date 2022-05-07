@@ -209,6 +209,7 @@ func (fs *fileSource) GetAllFiles() ([]*desc.FileDescriptor, error) {
 }
 
 func (fs *fileSource) FindSymbol(fullyQualifiedName string) (desc.Descriptor, error) {
+	fmt.Println("fileSource FindSymbol")
 	for _, fd := range fs.files {
 		if dsc := fd.FindSymbol(fullyQualifiedName); dsc != nil {
 			return dsc, nil
@@ -245,6 +246,7 @@ func (ss serverSource) ListServices() ([]string, error) {
 }
 
 func (ss serverSource) FindSymbol(fullyQualifiedName string) (desc.Descriptor, error) {
+	//fmt.Println("serverSource FindSymbol", fullyQualifiedName)
 	file, err := ss.client.FileContainingSymbol(fullyQualifiedName)
 	if err != nil {
 		return nil, reflectionSupport(err)

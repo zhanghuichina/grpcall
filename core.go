@@ -573,7 +573,7 @@ func BlockingDial(ctx context.Context, address string, opts ...grpc.DialOption) 
 		ctx, cancel := context.WithTimeout(ctx, timeout)
 		defer cancel()
 
-		conn, err := (&net.Dialer{Cancel: ctx.Done()}).Dial("tcp", address)
+		conn, err := (&net.Dialer{Cancel: ctx.Done()}).Dial("unix", address)
 		if err != nil {
 			writeResult(err)
 			return nil, err
